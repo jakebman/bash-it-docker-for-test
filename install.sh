@@ -16,7 +16,7 @@ apk add --no-cache \
   tzdata
 cp /usr/share/zoneinfo/${SYSTEM_TZ} /etc/localtime
 echo "${SYSTEM_TZ}" > /etc/TZ
-git clone --depth 1 https://github.com/Bash-it/bash-it.git /tmp/bash_it
+git clone --depth 1 https://github.com/jakebman/bash-it.git /tmp/bash_it
 cp -R /tmp/bash_it /root/.bash_it
 cp -R /tmp/bash_it ${SERVICE_HOME}/.bash_it
 /root/.bash_it/install.sh --silent
