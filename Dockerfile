@@ -26,6 +26,8 @@ ENV SYSTEM_TZ ${SYSTEM_TZ:-Europe/Berlin}
 ENV SERVICE_USER bashit
 ENV SERVICE_HOME /home/${SERVICE_USER}
 
+COPY install.sh /
+RUN /install.sh
 COPY setup.sh /
 RUN /setup.sh
 USER ${SERVICE_USER}
