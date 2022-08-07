@@ -7,7 +7,7 @@ set -o errexit
 
 set -x
 
-
+apk add ack perl
 chown -R ${SERVICE_USER}:${SERVICE_USER} ${SERVICE_HOME}
 sudo --user ${SERVICE_USER} ${SERVICE_HOME}/.bash_it/install.sh --silent
 echo -e "\n# Load bash-completion\n[ -f /usr/share/bash-completion/bash_completion  ] && source /usr/share/bash-completion/bash_completion" >> ${SERVICE_HOME}/.bashrc
