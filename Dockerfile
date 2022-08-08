@@ -64,9 +64,11 @@ RUN apk add sed # prevent tests (bash-it help plugins and bash-it show aliases)
 RUN sudo --user "$SERVICE_USER" bash -i -c "bash-it profile load jake-home 2>&1| tee /tmp/foo2"
 RUN sed -i -e 's/.*BASH_IT_THEME.*/export BASH_IT_THEME=nwinkler/' ${SERVICE_HOME}/.bashrc
 
-
-
-
+RUN apk add py-pip
+RUN pip install --ignore-installed distlib pre-commit
+RUN apk add gcc libc-dev python3-dev # needed for pre-commit
+RUN cd ~/.bash* && pre-commit # pre-cache this first load
+RUN apk add shfmt shellcheck # Necessary to perform pre-commit actions
 
 
 USER ${SERVICE_USER}
