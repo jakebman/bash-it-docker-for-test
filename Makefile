@@ -1,10 +1,12 @@
 
 build: .built
-.built: Dockerfile setup.sh install.sh Makefile
+.built: Dockerfile Makefile
 	docker build -t foo --progress plain .
 	touch .built
 run: build
 	docker run --rm -it foo
+root: build
+	docker run --rm -it --user root foo
 
 clean:
 	rm .built || echo "it's fine - .built is already gone"
