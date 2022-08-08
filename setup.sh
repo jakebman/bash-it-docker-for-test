@@ -9,6 +9,7 @@ set -x
 
 apk add ack perl # needed for ack-completion, which (TODO!) doesn't behave properly if ack isn't installed
 apk add curl # needed to pass tests (myip)
+apk add sed # prevent tests (bash-it help plugins and bash-it show aliases)
 chown -R ${SERVICE_USER}:${SERVICE_USER} ${SERVICE_HOME}
 sudo --user ${SERVICE_USER} ${SERVICE_HOME}/.bash_it/install.sh --silent
 echo -e "\n# Load bash-completion\n[ -f /usr/share/bash-completion/bash_completion  ] && source /usr/share/bash-completion/bash_completion" >> ${SERVICE_HOME}/.bashrc
