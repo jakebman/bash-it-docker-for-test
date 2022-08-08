@@ -35,9 +35,22 @@ RUN apk add --no-cache \
   sudo \
   vim \
   ncurses \
-  tzdata
-run git clone --depth 1 https://github.com/sstephenson/bats.git /tmp/bats
-run /tmp/bats/install.sh /usr/local
+  tzdata \
+  ack \
+  perl \
+  curl \
+  py-pip \
+  gcc \
+  libc-dev \
+  python3-dev
+
+# install bats
+run git clone --depth 1 https://github.com/sstephenson/bats.git /tmp/bats && \
+    /tmp/bats/install.sh /usr/local
+
+# install pre-commit
+RUN pip install --ignore-installed distlib pre-commit && \
+    cd ~/.bash* && pre-commit # pre-cache this first load
 
 RUN cp /usr/share/zoneinfo/${SYSTEM_TZ} /etc/localtime
 RUN echo "${SYSTEM_TZ}" > /etc/TZ
@@ -56,19 +69,20 @@ run apk del tzdata && \
   rm -rf /tmp/{.}* /tmp/*
 
 # setup-ish
-RUN apk add ack perl # needed for ack-completion, which (TODO!) doesn't behave properly if ack isn't installed
-RUN apk add curl # needed to pass tests (myip)
-RUN apk add sed # prevent tests (bash-it help plugins and bash-it show aliases)
+#RUN apk add ack perl # needed for ack-completion, which (TODO!) doesn't behave properly if ack isn't installed
+#RUN apk add curl # needed to pass tests (myip)
+#RUN apk add sed # prevent tests (bash-it help plugins and bash-it show aliases)
 
 # run this command in a subprocess as SERVICE_USER
 RUN sudo --user "$SERVICE_USER" bash -i -c "bash-it profile load jake-home 2>&1| tee /tmp/foo2"
-RUN sed -i -e 's/.*BASH_IT_THEME.*/export BASH_IT_THEME=nwinkler/' ${SERVICE_HOME}/.bashrc
+RUN sed -i -e 's/.*BASH_IT_THEME.*/export BASH_IT_THEME=nwinkler/' ${SERVICE_HOME}/.bashrc ~/.bashrc
 
-RUN apk add py-pip
-RUN pip install --ignore-installed distlib pre-commit
-RUN apk add gcc libc-dev python3-dev # needed for pre-commit
-RUN cd ~/.bash* && pre-commit # pre-cache this first load
-RUN apk add shfmt shellcheck # Necessary to perform pre-commit actions
+# install pre-commit
+#RUN apk add py-pip
+#RUN pip install --ignore-installed distlib pre-commit
+#RUN apk add gcc libc-dev python3-dev # needed for pre-commit
+#RUN cd ~/.bash* && pre-commit # pre-cache this first load
+#RUN apk add shfmt shellcheck # Necessary to perform pre-commit actions
 
 
 USER ${SERVICE_USER}
