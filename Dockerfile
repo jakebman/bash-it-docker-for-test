@@ -26,10 +26,49 @@ ENV SYSTEM_TZ ${SYSTEM_TZ:-Europe/Berlin}
 ENV SERVICE_USER bashit
 ENV SERVICE_HOME /home/${SERVICE_USER}
 
-COPY install.sh /
-RUN /install.sh
-COPY setup.sh /
-RUN /setup.sh
+# install-ish
+RUN adduser -h ${SERVICE_HOME} -s /bin/bash -u 1002 -D ${SERVICE_USER}
+RUN apk add --no-cache \
+  bash-completion \
+  dumb-init \
+  git \
+  sudo \
+  vim \
+  ncurses \
+  tzdata
+run git clone --depth 1 https://github.com/sstephenson/bats.git /tmp/bats
+run /tmp/bats/install.sh /usr/local
+
+RUN cp /usr/share/zoneinfo/${SYSTEM_TZ} /etc/localtime
+RUN echo "${SYSTEM_TZ}" > /etc/TZ
+RUN git clone --depth 1 https://github.com/jakebman/bash-it.git /tmp/bash_it
+RUN cp -R /tmp/bash_it /root/.bash_it && \
+  cp -R /tmp/bash_it ${SERVICE_HOME}/.bash_it
+RUN /root/.bash_it/install.sh --silent && \
+  echo -e "\n# Load bash-completion\n[ -f /usr/share/bash-completion/bash_completion  ] && source /usr/share/bash-completion/bash_completion" >> /root/.bashrc
+RUN chown -R ${SERVICE_USER}:${SERVICE_USER} ${SERVICE_HOME}
+RUN sudo --user ${SERVICE_USER} ${SERVICE_HOME}/.bash_it/install.sh --silent && \
+  echo -e "\n# Load bash-completion\n[ -f /usr/share/bash-completion/bash_completion  ] && source /usr/share/bash-completion/bash_completion" >> ${SERVICE_HOME}/.bashrc
+
+
+run sed -i -e "s/bin\/ash/bin\/bash/" /etc/passwd
+run apk del tzdata && \
+  rm -rf /tmp/{.}* /tmp/*
+
+# setup-ish
+RUN apk add ack perl # needed for ack-completion, which (TODO!) doesn't behave properly if ack isn't installed
+RUN apk add curl # needed to pass tests (myip)
+RUN apk add sed # prevent tests (bash-it help plugins and bash-it show aliases)
+
+# run this command in a subprocess as SERVICE_USER
+RUN sudo --user "$SERVICE_USER" bash -i -c "bash-it profile load jake-home 2>&1| tee /tmp/foo2"
+RUN sed -i -e 's/.*BASH_IT_THEME.*/export BASH_IT_THEME=nwinkler/' ${SERVICE_HOME}/.bashrc
+
+
+
+
+
+
 USER ${SERVICE_USER}
 
 WORKDIR ${SERVICE_HOME}
