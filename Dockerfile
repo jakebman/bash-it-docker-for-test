@@ -55,6 +55,7 @@ RUN pip install --ignore-installed distlib pre-commit
 RUN cp /usr/share/zoneinfo/${SYSTEM_TZ} /etc/localtime
 RUN echo "${SYSTEM_TZ}" > /etc/TZ
 RUN git clone --depth 1 https://github.com/jakebman/bash-it.git /tmp/bash_it
+RUN cd /tmp/bash_it && git submodule init && git submodule update # the first steps of running .bash_it/test/run; cacheable
 RUN cp -R /tmp/bash_it /root/.bash_it && \
   cp -R /tmp/bash_it ${SERVICE_HOME}/.bash_it
 RUN /root/.bash_it/install.sh --silent && \
@@ -64,7 +65,7 @@ RUN sudo --user ${SERVICE_USER} ${SERVICE_HOME}/.bash_it/install.sh --silent && 
   echo -e "\n# Load bash-completion\n[ -f /usr/share/bash-completion/bash_completion  ] && source /usr/share/bash-completion/bash_completion" >> ${SERVICE_HOME}/.bashrc
 
 # pre-commit first run setup
-RUN cd ~/.bash_it && pre-commit # pre-cache this first load
+RUN cd ~/.bash_it && pre-commit install # this takes a little time. Save that for the impatient
 
 
 run sed -i -e "s/bin\/ash/bin\/bash/" /etc/passwd
