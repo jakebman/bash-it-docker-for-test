@@ -11,4 +11,5 @@ root: build
 clean:
 	rm .built || echo "it's fine - .built is already gone"
 	docker image rm foo || echo "it's fine - foo is already gone"
-	(yes | docker builder prune) || echo "it's fine - prune doesn't need to work"
+	(yes | docker builder prune) || echo "it's fine - builder prune doesn't need to work"
+	(yes | docker image   prune) || echo "it's fine - image   prune doesn't need to work"
