@@ -26,6 +26,16 @@ ENV SYSTEM_TZ ${SYSTEM_TZ:-Europe/Berlin}
 ENV SERVICE_USER bashit
 ENV SERVICE_HOME /home/${SERVICE_USER}
 
+# Protected network might need a cert:
+COPY *.crt /usr/local/share/ca-certificates/
+# bootstrap the cert into ca-certificates manually, so we can then download ca-certificates to update-ca-certificates properly
+# see https://stackoverflow.com/questions/67231714/how-to-add-trusted-root-ca-to-docker-alpine
+# we run this all on one line, suppressing errors, because this shouldn't break the build
+# (the build should break lower, when something actually matters)
+RUN cat /usr/local/share/ca-certificates/*.crt >> /etc/ssl/certs/ca-certificates.crt && \
+    apk add --no-cache ca-certificates && \
+    update-ca-certificates || echo "no problem if we don't have any certificates"
+
 # install-ish
 RUN adduser -h ${SERVICE_HOME} -s /bin/bash -u 1002 -D ${SERVICE_USER}
 RUN apk add --no-cache \
