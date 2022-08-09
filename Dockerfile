@@ -39,6 +39,7 @@ RUN apk add --no-cache \
   ack \
   perl \
   curl \
+  sed \
   py-pip \
   gcc \
   libc-dev \
