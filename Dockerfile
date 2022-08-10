@@ -1,19 +1,17 @@
 # Developer:
 # ---------
-# Name:      Maik Ellerbrock
+# Name:      Jake Boeckerman
 #
-# GitHub:    https://github.com/ellerbrock
-# Twitter:   https://twitter.com/frapsoft
-# Docker:    https://hub.docker.com/u/ellerbrock
-# Quay:      https://quay.io/user/ellerbrock
+# GitHub:    https://github.com/jakebman
+# Docker:    https://hub.docker.com/u/jakebman
 #
 # Description:
 # -----------
-# Bash Shell v.5 with Bash-it, bats, bash-completion, and the appropriate linting tools
+# Bash Shell v.5 with Bash-it, bats, bash-completion, common utilities, and the appropriate linting tools for bash-it development
 
 FROM bash:5
 
-MAINTAINER Maik Ellerbrock
+MAINTAINER Jake Boeckerman
 
 ENV VERSION 0.1.0
 
@@ -21,7 +19,7 @@ ENV VERSION 0.1.0
 ARG SYSTEM_TZ
 
 # Default Settings (for optional Parameter)
-ENV SYSTEM_TZ ${SYSTEM_TZ:-Europe/Berlin}
+ENV SYSTEM_TZ ${SYSTEM_TZ:-America/Denver}
 
 ENV SERVICE_USER bashit
 ENV SERVICE_HOME /home/${SERVICE_USER}
@@ -104,7 +102,6 @@ run apk del tzdata && \
 
 # allow $SERVICE_USER to sudo (requires sudo above)
 RUN echo "${SERVICE_USER} ALL=(ALL) NOPASSWD: ALL" >"/etc/sudoers.d/${SERVICE_USER}" && chmod 440 "/etc/sudoers.d/$SERVICE_USER"
-
 
 USER ${SERVICE_USER}
 
