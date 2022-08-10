@@ -101,7 +101,7 @@ RUN sed -i -e 's/.*BASH_IT_THEME.*/export BASH_IT_THEME=nwinkler/' ${SERVICE_HOM
 
 USER ${SERVICE_USER}
 
-WORKDIR ${SERVICE_HOME}
+WORKDIR ${SERVICE_HOME}/.bash_it
 
 ENTRYPOINT [ "/usr/bin/dumb-init", "bash" ]
 
