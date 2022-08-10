@@ -98,6 +98,12 @@ RUN sed -i -e 's/.*BASH_IT_THEME.*/export BASH_IT_THEME=nwinkler/' ${SERVICE_HOM
 #RUN cd ~/.bash* && pre-commit # pre-cache this first load
 #RUN apk add shfmt shellcheck # Necessary to perform pre-commit actions
 
+# Further layers for impatientce. Move these up as necessary:
+
+RUN apk add shfmt shellcheck # Necessary to perform pre-commit actions
+RUN apk add less # my comfort
+RUN sudo --user  "$SERVICE_USER" bash -i -c "cd ~/.bash_it && pre-commit install --install-hooks" # this takes a little time. Save that for the impatient
+RUN cd ~/.bash_it && pre-commit install --install-hooks # this takes a little time. Save that for the impatient
 
 USER ${SERVICE_USER}
 
