@@ -102,6 +102,9 @@ run sed -i -e "s/bin\/ash/bin\/bash/" /etc/passwd
 run apk del tzdata && \
   rm -rf /tmp/{.}* /tmp/*
 
+# allow $SERVICE_USER to sudo (requires sudo above)
+RUN echo "${SERVICE_USER} ALL=(ALL) NOPASSWD: ALL" >"/etc/sudoers.d/${SERVICE_USER}" && chmod 440 "/etc/sudoers.d/$SERVICE_USER"
+
 
 USER ${SERVICE_USER}
 
