@@ -36,7 +36,15 @@ RUN cat /usr/local/share/ca-certificates/*.crt >> /etc/ssl/certs/ca-certificates
     apk add --no-cache ca-certificates && \
     update-ca-certificates || echo "no problem if we don't have any certificates"
 
-# install-ish
+# install other items:
+#RUN apk add ack perl # needed for ack-completion, which (TODO!) doesn't behave properly if ack isn't installed
+#RUN apk add curl # needed to pass tests (myip)
+#RUN apk add sed # prevent tests (bash-it help plugins and bash-it show aliases)
+
+
+#RUN apk add gcc libc-dev python3-dev # needed for pre-commit
+#RUN apk add shfmt shellcheck # Necessary to perform pre-commit actions
+#RUN apk add less # my comfort
 RUN adduser -h ${SERVICE_HOME} -s /bin/bash -u 1002 -D ${SERVICE_USER}
 RUN apk add --no-cache \
   bash-completion \
@@ -53,53 +61,47 @@ RUN apk add --no-cache \
   py-pip \
   gcc \
   libc-dev \
-  python3-dev
-RUN apk add shfmt shellcheck # Necessary to perform pre-commit actions
-RUN apk add less # my comfort
+  python3-dev \
+  shfmt \
+  shellcheck \
+  less
 
 # install bats
 run git clone --depth 1 https://github.com/sstephenson/bats.git /tmp/bats && \
     /tmp/bats/install.sh /usr/local
 
-# install pre-commit
+# install the pre-commit tool
 RUN pip install --ignore-installed distlib pre-commit
 
+# Setup the Time Zones
 RUN cp /usr/share/zoneinfo/${SYSTEM_TZ} /etc/localtime
 RUN echo "${SYSTEM_TZ}" > /etc/TZ
-RUN git clone --depth 1 https://github.com/jakebman/bash-it.git /tmp/bash_it
-RUN cd /tmp/bash_it && git submodule init && git submodule update # the first steps of running .bash_it/test/run; cacheable
-RUN cp -R /tmp/bash_it /root/.bash_it && \
-  cp -R /tmp/bash_it ${SERVICE_HOME}/.bash_it
+
+# Install Bash-It for root
+RUN git clone --depth 1 https://github.com/jakebman/bash-it.git /root/.bash_it
+RUN cd /root/.bash_it && git submodule init && git submodule update # the first steps of running .bash_it/test/run; cacheable
 RUN /root/.bash_it/install.sh --silent && \
-  echo -e "\n# Load bash-completion\n[ -f /usr/share/bash-completion/bash_completion  ] && source /usr/share/bash-completion/bash_completion" >> /root/.bashrc
+  echo -e "\n# Load bash-completion\n[ -f /usr/share/bash-completion/bash_completion ] && source /usr/share/bash-completion/bash_completion" >> /root/.bashrc
+# Pre-install the pre-commit hooks. This step takes some time, so it's better to
+# run it once in the docker file than to run it every time we run ./lint_clean_files.sh
+RUN cd /root/.bash_it && pre-commit install --install-hooks # saving time for the impatient
+
+# Duplicate into SERVICE_USER
+RUN cp -R /root/.bash_it ${SERVICE_HOME}/.bash_it
 RUN chown -R ${SERVICE_USER}:${SERVICE_USER} ${SERVICE_HOME}
 RUN sudo --user ${SERVICE_USER} ${SERVICE_HOME}/.bash_it/install.sh --silent && \
-  echo -e "\n# Load bash-completion\n[ -f /usr/share/bash-completion/bash_completion  ] && source /usr/share/bash-completion/bash_completion" >> ${SERVICE_HOME}/.bashrc
+  echo -e "\n# Load bash-completion\n[ -f /usr/share/bash-completion/bash_completion ] && source /usr/share/bash-completion/bash_completion" >> ${SERVICE_HOME}/.bashrc
+# setup actions for SERVICE_USER
+RUN sudo --user "$SERVICE_USER" bash -i -c "bash-it profile load jake-home 2>&1| tee /tmp/foo2"
+RUN sudo --user "$SERVICE_USER" bash -i -c "cd ~/.bash_it && pre-commit install --install-hooks" # saving time for the impatient
 
-# pre-commit first run setup
-RUN cd ~/.bash_it && pre-commit install --install-hooks # this takes a little time. Save that for the impatient
-
+# EVERYONE gets this theme:
+RUN sed -i -e 's/.*BASH_IT_THEME.*/export BASH_IT_THEME=nwinkler/' ${SERVICE_HOME}/.bashrc /root/.bashrc
 
 run sed -i -e "s/bin\/ash/bin\/bash/" /etc/passwd
 run apk del tzdata && \
   rm -rf /tmp/{.}* /tmp/*
 
-# setup-ish
-#RUN apk add ack perl # needed for ack-completion, which (TODO!) doesn't behave properly if ack isn't installed
-#RUN apk add curl # needed to pass tests (myip)
-#RUN apk add sed # prevent tests (bash-it help plugins and bash-it show aliases)
-
-# setup actions for SERVICE_USER
-RUN sudo --user "$SERVICE_USER" bash -i -c "bash-it profile load jake-home 2>&1| tee /tmp/foo2"
-RUN sudo --user "$SERVICE_USER" bash -i -c "cd ~/.bash_it && pre-commit install --install-hooks" # this takes a little time. Save that for the impatient
-RUN sed -i -e 's/.*BASH_IT_THEME.*/export BASH_IT_THEME=nwinkler/' ${SERVICE_HOME}/.bashrc ~/.bashrc
-
-# install pre-commit
-#RUN apk add py-pip
-#RUN pip install --ignore-installed distlib pre-commit
-#RUN apk add gcc libc-dev python3-dev # needed for pre-commit
-#RUN cd ~/.bash* && pre-commit # pre-cache this first load
-#RUN apk add shfmt shellcheck # Necessary to perform pre-commit actions
 
 USER ${SERVICE_USER}
 
