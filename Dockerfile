@@ -65,7 +65,7 @@ RUN apk add --no-cache \
   less
 
 # install bats
-run git clone --depth 1 https://github.com/sstephenson/bats.git /tmp/bats && \
+run git clone --depth 1 https://github.com/bats-core/bats-core.git /tmp/bats && \
     /tmp/bats/install.sh /usr/local
 
 # install the pre-commit tool
