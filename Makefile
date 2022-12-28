@@ -1,4 +1,6 @@
 
+all: build
+
 build: .built
 .built: Dockerfile Makefile
 	docker build -t foo --progress plain .
